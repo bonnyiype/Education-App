@@ -9,13 +9,18 @@
 <body>
     <div class="header">
         <h1>Select a Number</h1>
-        <div class="button-group">
-            <button id="toggleMode" class="toggle-btn">Switch to Letters</button>
-            <button id="toggleLowerCase" class="toggle-btn toggle-lowercase">Switch to Lowercase</button>
-            <button id="toggleColors" class="toggle-btn toggle-colors">Switch to Colors</button>
-            <button id="toggleSightWords" class="toggle-btn toggle-sight-words">Switch to Sight Words</button>
-            <button id="toggleEmotions" class="toggle-btn toggle-emotions">Switch to Emotions</button>
-            <button id="toggleShapes" class="toggle-btn toggle-shapes">Switch to Shapes</button>
+        <div class="dropdown">
+            <button id="menuButton" class="dropdown-btn">Learning Menu ▼</button>
+            <div class="dropdown-content">
+                <button id="toggleMode" class="toggle-btn">Switch to Letters</button>
+                <button id="toggleLowerCase" class="toggle-btn toggle-lowercase">Switch to Lowercase</button>
+                <button id="toggleColors" class="toggle-btn toggle-colors">Switch to Colors</button>
+                <button id="toggleSightWords" class="toggle-btn toggle-sight-words">Switch to Sight Words</button>
+                <button id="toggleEmotions" class="toggle-btn toggle-emotions">Switch to Emotions</button>
+                <button id="toggleShapes" class="toggle-btn toggle-shapes">Switch to Shapes</button>
+                <button id="bbcPhonics" class="toggle-btn toggle-bbc-phonics" onclick="window.open('https://www.bbc.co.uk/bitesize/topics/z7tr96f', '_blank')">BBC Phonics</button>
+                <button id="bodyParts" class="toggle-btn toggle-body-parts" onclick="window.open('https://www.youtube.com/watch?v=SUt8q0EKbms', '_blank')">Learn Body Parts</button>
+            </div>
         </div>
     </div>
     <div class="number-grid" id="numberGrid">

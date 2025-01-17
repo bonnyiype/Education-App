@@ -186,10 +186,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     allBoxes.forEach(b => b.classList.remove('selected'));
                     this.classList.add('selected');
                     
-                    // Speak the number or letter
+                    // Simply speak the value for all cases
                     const utterance = new SpeechSynthesisUtterance(value.toString());
-                    utterance.rate = 0.8; // Slightly slower
-                    utterance.pitch = 1.2; // Slightly higher pitch
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.2;
                     speechSynthesis.speak(utterance);
                 }
             });
@@ -554,6 +554,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         currentPage = 1;
         updatePage();
+    });
+
+    // Add BBC phonics button handler
+    const bbcPhonicsBtn = document.getElementById('bbcPhonics');
+    bbcPhonicsBtn.addEventListener('click', () => {
+        window.open('https://www.bbc.co.uk/bitesize/topics/z7tr96f', '_blank');
     });
 
     // Initialize the lowercase button as hidden

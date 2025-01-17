@@ -466,7 +466,7 @@ h1 {
 }
 
 .toggle-shapes:hover {
-    background-color: #00796B;
+    background-color: #0D47A1;
 }
 
 .shape-box {
@@ -506,4 +506,77 @@ h1 {
     font-size: 36px;
     font-weight: bold;
     text-align: center;
+}
+
+.toggle-bbc-phonics {
+    background-color: #E53935;
+}
+
+.toggle-bbc-phonics:hover {
+    background-color: #C62828;
+}
+
+.toggle-body-parts {
+    background-color: #FF4081;
+}
+
+.toggle-body-parts:hover {
+    background-color: #F50057;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-btn {
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.dropdown-btn:hover {
+    background-color: #1976D2;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #f9f9f9;
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.dropdown-content .toggle-btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin: 5px 0;
+    border-radius: 3px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Preserve existing button styles but adjust for dropdown */
+.toggle-btn {
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    color: white;
+    border: none;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin: 5px 0;
 }
