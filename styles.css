@@ -255,6 +255,14 @@ h1 {
     background-color: #E64A19;
 }
 
+.toggle-lowercase {
+    background-color: #00BCD4;
+}
+
+.toggle-lowercase:hover {
+    background-color: #0097A7;
+}
+
 .color-box {
     border: 4px solid #000;
     display: flex;
@@ -393,4 +401,109 @@ h1 {
     to {
         transform: scaleY(1);
     }
+}
+
+.toggle-emotions {
+    background-color: #E91E63;
+}
+
+.toggle-emotions:hover {
+    background-color: #C2185B;
+}
+
+.emotion-box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 4px solid #000;
+    border-radius: 15px;
+    width: 250px;
+    height: 250px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.emotion-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.emotion-box.selected {
+    border-color: #4CAF50;
+    background-color: #E8F5E9;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.emotion-box .emoji {
+    font-size: 96px;
+    margin-bottom: 20px;
+}
+
+.emotion-box .emotion-name {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Category-specific borders */
+.emotion-box[data-category="basic"] {
+    border-color: #2196F3;
+}
+
+.emotion-box[data-category="physical"] {
+    border-color: #FF9800;
+}
+
+.emotion-box[data-category="mood"] {
+    border-color: #9C27B0;
+}
+
+.toggle-shapes {
+    background-color: #009688;
+}
+
+.toggle-shapes:hover {
+    background-color: #00796B;
+}
+
+.shape-box {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    border: 4px solid #000;
+    border-radius: 15px;
+    width: 250px;
+    height: 250px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.shape-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.shape-box.selected {
+    border-color: #4CAF50;
+    background-color: #E8F5E9;
+    box-shadow: 0 0 15px rgba(76, 175, 80, 0.5);
+}
+
+.shape-box .shape-svg {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+    fill: #333;
+}
+
+.shape-box .shape-name {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
 }

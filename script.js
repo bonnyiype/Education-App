@@ -4,9 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const nextBtn = document.getElementById('nextBtn');
     const pageInfo = document.getElementById('pageInfo');
     const toggleBtn = document.getElementById('toggleMode');
+    const toggleLowerCase = document.getElementById('toggleLowerCase');
     const toggleColorsBtn = document.getElementById('toggleColors');
     const toggleSightWordsBtn = document.getElementById('toggleSightWords');
+    const toggleEmotionsBtn = document.getElementById('toggleEmotions');
     const pageTitle = document.querySelector('h1');
+    const toggleShapesBtn = document.getElementById('toggleShapes');
     
     const sightWords = [
         // Basic Sight Words
@@ -57,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     let currentPage = 1;
     let isNumberMode = true;
+    let isUpperCase = true;
     let isColorMode = false;
     let isSightWordsMode = false;
     let targetWord = '';
@@ -67,7 +71,63 @@ document.addEventListener('DOMContentLoaded', function() {
     let celebration = false;
     const numbersPerPage = 10;
     const startNumber = 1;
-    const endNumber = 26;
+    const endNumber = 50;
+    let isEmotionsMode = false;
+    let isShapesMode = false;
+    
+    const emotions = [
+        { name: 'Happy', emoji: '😊', category: 'basic' },
+        { name: 'Sad', emoji: '😢', category: 'basic' },
+        { name: 'Angry', emoji: '😠', category: 'basic' },
+        { name: 'Surprised', emoji: '😮', category: 'basic' },
+        { name: 'Scared', emoji: '😨', category: 'basic' },
+        { name: 'Tired', emoji: '😫', category: 'physical' },
+        { name: 'Sleepy', emoji: '😴', category: 'physical' },
+        { name: 'Sick', emoji: '🤒', category: 'physical' },
+        { name: 'Hurt', emoji: '🤕', category: 'physical' },
+        { name: 'Hungry', emoji: '😋', category: 'physical' },
+        { name: 'Thirsty', emoji: '🥤', category: 'physical' },
+        { name: 'Excited', emoji: '🤩', category: 'mood' },
+        { name: 'Bored', emoji: '😑', category: 'mood' },
+        { name: 'Silly', emoji: '🤪', category: 'mood' },
+        { name: 'Calm', emoji: '😌', category: 'mood' },
+        { name: 'Loved', emoji: '🥰', category: 'mood' }
+    ];
+
+    const shapes = [
+        {
+            name: 'Circle',
+            svg: '<circle cx="60" cy="60" r="50" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Square',
+            svg: '<rect x="10" y="10" width="100" height="100" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Triangle',
+            svg: '<polygon points="60,10 110,110 10,110" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Rectangle',
+            svg: '<rect x="10" y="30" width="100" height="60" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Diamond',
+            svg: '<polygon points="60,10 110,60 60,110 10,60" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Star',
+            svg: '<path d="M60,10 L70,40 L100,40 L75,60 L85,90 L60,70 L35,90 L45,60 L20,40 L50,40 Z" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Heart',
+            svg: '<path d="M60,100 L90,70 A20,20 0 1,0 60,50 A20,20 0 1,0 30,70 Z" stroke="black" stroke-width="3"/>',
+        },
+        {
+            name: 'Oval',
+            svg: '<ellipse cx="60" cy="60" rx="50" ry="30" stroke="black" stroke-width="3"/>',
+        }
+    ];
 
     function getRandomWords(exclude, count = 2) {
         const availableWords = sightWords.filter(word => word !== exclude);
@@ -83,7 +143,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function getLetterForNumber(num) {
-        return String.fromCharCode(64 + num);
+        if (num > 26) return num; // Return numbers above 26 as is
+        const charCode = 64 + num; // ASCII for uppercase letters
+        return isUpperCase ? String.fromCharCode(charCode) : String.fromCharCode(charCode + 32);
     }
 
     function createBox(value, number, isColor = false) {
@@ -97,9 +159,25 @@ document.addEventListener('DOMContentLoaded', function() {
             tooltip.className = 'tooltip';
             tooltip.textContent = value.name;
             box.appendChild(tooltip);
+            
+            // Add click handler for colors
+            box.addEventListener('click', function() {
+                if (this.classList.contains('selected')) {
+                    this.classList.remove('selected');
+                } else {
+                    const allBoxes = document.querySelectorAll('.color-box');
+                    allBoxes.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    
+                    // Speak the color name
+                    const utterance = new SpeechSynthesisUtterance(value.name);
+                    utterance.rate = 0.8; // Slightly slower
+                    utterance.pitch = 1.2; // Slightly higher pitch
+                    speechSynthesis.speak(utterance);
+                }
+            });
         } else {
             box.textContent = value;
-            // Add click handler for numbers and letters
             box.addEventListener('click', function() {
                 if (this.classList.contains('selected')) {
                     this.classList.remove('selected');
@@ -107,6 +185,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     const allBoxes = document.querySelectorAll('.number-box');
                     allBoxes.forEach(b => b.classList.remove('selected'));
                     this.classList.add('selected');
+                    
+                    // Speak the number or letter
+                    const utterance = new SpeechSynthesisUtterance(value.toString());
+                    utterance.rate = 0.8; // Slightly slower
+                    utterance.pitch = 1.2; // Slightly higher pitch
+                    speechSynthesis.speak(utterance);
                 }
             });
         }
@@ -126,6 +210,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 const allWordBoxes = document.querySelectorAll('.word-option');
                 allWordBoxes.forEach(box => box.classList.remove('selected'));
                 clickedBox.classList.add('selected');
+                
+                // Speak the selected word
+                const utterance = new SpeechSynthesisUtterance(selectedWord);
+                utterance.rate = 0.8; // Slightly slower
+                utterance.pitch = 1.2; // Slightly higher pitch
+                speechSynthesis.speak(utterance);
             }
         }
         
@@ -142,13 +232,29 @@ document.addEventListener('DOMContentLoaded', function() {
             if (targetWordBox && selectedWordBox) {
                 targetWordBox.classList.add('matched');
                 selectedWordBox.classList.add('matched');
+                
+                // Speak "Correct!" after a short delay
+                setTimeout(() => {
+                    const correctUtterance = new SpeechSynthesisUtterance("Correct!");
+                    correctUtterance.rate = 0.8;
+                    correctUtterance.pitch = 1.2;
+                    speechSynthesis.speak(correctUtterance);
+                }, 1000);
             }
 
             // Wait for animation to complete before showing next word
             setTimeout(() => {
                 targetWord = sightWords[Math.floor(Math.random() * sightWords.length)];
                 updateSightWordsDisplay();
-            }, 1000);
+                
+                // Speak the new target word after a delay
+                setTimeout(() => {
+                    const newWordUtterance = new SpeechSynthesisUtterance(targetWord);
+                    newWordUtterance.rate = 0.8;
+                    newWordUtterance.pitch = 1.2;
+                    speechSynthesis.speak(newWordUtterance);
+                }, 500);
+            }, 2000);
         } else {
             feedback = "Let's try again! 💪";
             isCorrect = false;
@@ -177,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const targetContainer = document.createElement('div');
         targetContainer.className = 'target-container';
         
-        // Create target word box - now using plain style
+        // Create target word box
         const targetBox = document.createElement('div');
         targetBox.className = 'number-box word-option target-word';
         targetBox.textContent = targetWord;
@@ -193,7 +299,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const allOptions = [...wrongOptions, targetWord];
         const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
         
-        // Create the option boxes - now using plain style
         shuffledOptions.forEach((word) => {
             const box = document.createElement('div');
             box.className = 'number-box word-option';
@@ -221,11 +326,91 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    function createEmotionBox(emotion) {
+        const box = document.createElement('div');
+        box.className = 'emotion-box';
+        box.setAttribute('data-category', emotion.category);
+        
+        const emojiDiv = document.createElement('div');
+        emojiDiv.className = 'emoji';
+        emojiDiv.textContent = emotion.emoji;
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'emotion-name';
+        nameDiv.textContent = emotion.name;
+        
+        box.appendChild(emojiDiv);
+        box.appendChild(nameDiv);
+        
+        box.addEventListener('click', function() {
+            // Remove selection from other boxes
+            const allBoxes = document.querySelectorAll('.emotion-box');
+            allBoxes.forEach(b => b.classList.remove('selected'));
+            
+            // Add selection to clicked box
+            this.classList.add('selected');
+            
+            // Speak the emotion name
+            const utterance = new SpeechSynthesisUtterance(emotion.name);
+            utterance.rate = 0.8; // Slightly slower
+            utterance.pitch = 1.2; // Slightly higher pitch
+            speechSynthesis.speak(utterance);
+        });
+        
+        return box;
+    }
+
+    function createShapeBox(shape) {
+        const box = document.createElement('div');
+        box.className = 'shape-box';
+        
+        const svgContainer = document.createElement('div');
+        svgContainer.className = 'shape-svg';
+        svgContainer.innerHTML = `<svg viewBox="0 0 120 120">${shape.svg}</svg>`;
+        
+        const nameDiv = document.createElement('div');
+        nameDiv.className = 'shape-name';
+        nameDiv.textContent = shape.name;
+        
+        box.appendChild(svgContainer);
+        box.appendChild(nameDiv);
+        
+        box.addEventListener('click', function() {
+            // Remove selection from other boxes
+            const allBoxes = document.querySelectorAll('.shape-box');
+            allBoxes.forEach(b => b.classList.remove('selected'));
+            
+            // Add selection to clicked box
+            this.classList.add('selected');
+            
+            // Speak the shape name
+            const utterance = new SpeechSynthesisUtterance(shape.name);
+            utterance.rate = 0.8; // Slightly slower
+            utterance.pitch = 1.2; // Slightly higher pitch
+            speechSynthesis.speak(utterance);
+        });
+        
+        return box;
+    }
+
     function updatePage() {
-        // Reset grid class first
         numberGrid.className = 'number-grid';
         
-        if (isColorMode) {
+        if (isShapesMode) {
+            numberGrid.innerHTML = '';
+            shapes.forEach(shape => {
+                const box = createShapeBox(shape);
+                numberGrid.appendChild(box);
+            });
+            document.querySelector('.navigation').style.display = 'none';
+        } else if (isEmotionsMode) {
+            numberGrid.innerHTML = '';
+            emotions.forEach(emotion => {
+                const box = createEmotionBox(emotion);
+                numberGrid.appendChild(box);
+            });
+            document.querySelector('.navigation').style.display = 'none';
+        } else if (isColorMode) {
             numberGrid.innerHTML = '';
             colors.forEach((color, index) => {
                 const box = createBox(color, index + 1, true);
@@ -242,8 +427,9 @@ document.addEventListener('DOMContentLoaded', function() {
             numberGrid.innerHTML = '';
             document.querySelector('.navigation').style.display = 'flex';
             
+            const maxEnd = isNumberMode ? endNumber : 26;  // Use 26 as max for letter mode
             const start = (currentPage - 1) * numbersPerPage + 1;
-            const end = Math.min(start + numbersPerPage - 1, endNumber);
+            const end = Math.min(start + numbersPerPage - 1, maxEnd);
             
             for (let i = start; i <= end; i++) {
                 const value = isNumberMode ? i : getLetterForNumber(i);
@@ -253,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             pageInfo.textContent = `Page ${currentPage}`;
             prevBtn.disabled = currentPage === 1;
-            nextBtn.disabled = end >= endNumber;
+            nextBtn.disabled = end >= maxEnd;  // Use maxEnd instead of endNumber
         }
     }
 
@@ -279,8 +465,18 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleBtn.addEventListener('click', () => {
         if (!isColorMode && !isSightWordsMode) {
             isNumberMode = !isNumberMode;
+            isUpperCase = true; // Reset to uppercase when switching to letters
             toggleBtn.textContent = isNumberMode ? 'Switch to Letters' : 'Switch to Numbers';
+            toggleLowerCase.style.display = isNumberMode ? 'none' : 'block';
             pageTitle.textContent = isNumberMode ? 'Select a Number' : 'Select a Letter';
+            updatePage();
+        }
+    });
+
+    toggleLowerCase.addEventListener('click', () => {
+        if (!isNumberMode && !isColorMode && !isSightWordsMode) {
+            isUpperCase = !isUpperCase;
+            toggleLowerCase.textContent = isUpperCase ? 'Switch to Lowercase' : 'Switch to Uppercase';
             updatePage();
         }
     });
@@ -317,10 +513,49 @@ document.addEventListener('DOMContentLoaded', function() {
             celebration = false;
             targetWord = sightWords[Math.floor(Math.random() * sightWords.length)];
         } else {
-            numberGrid.className = 'number-grid'; // Reset to default grid layout
+            numberGrid.className = 'number-grid';
         }
 
         currentPage = 1;
         updatePage();
     });
+
+    // Add emotions toggle handler
+    toggleEmotionsBtn.addEventListener('click', () => {
+        isEmotionsMode = !isEmotionsMode;
+        isColorMode = false;
+        isSightWordsMode = false;
+        isNumberMode = true;
+
+        toggleEmotionsBtn.textContent = isEmotionsMode ? 'Back to Main Page' : 'Switch to Emotions';
+        toggleBtn.style.display = isEmotionsMode ? 'none' : 'block';
+        toggleColorsBtn.style.display = isEmotionsMode ? 'none' : 'block';
+        toggleSightWordsBtn.style.display = isEmotionsMode ? 'none' : 'block';
+        pageTitle.textContent = isEmotionsMode ? 'Learn Emotions!' : 'Select a Number';
+
+        currentPage = 1;
+        updatePage();
+    });
+
+    // Add shapes toggle handler
+    toggleShapesBtn.addEventListener('click', () => {
+        isShapesMode = !isShapesMode;
+        isEmotionsMode = false;
+        isColorMode = false;
+        isSightWordsMode = false;
+        isNumberMode = true;
+
+        toggleShapesBtn.textContent = isShapesMode ? 'Back to Main Page' : 'Switch to Shapes';
+        toggleBtn.style.display = isShapesMode ? 'none' : 'block';
+        toggleColorsBtn.style.display = isShapesMode ? 'none' : 'block';
+        toggleSightWordsBtn.style.display = isShapesMode ? 'none' : 'block';
+        toggleEmotionsBtn.style.display = isShapesMode ? 'none' : 'block';
+        pageTitle.textContent = isShapesMode ? 'Learn Shapes!' : 'Select a Number';
+
+        currentPage = 1;
+        updatePage();
+    });
+
+    // Initialize the lowercase button as hidden
+    toggleLowerCase.style.display = 'none';
 });
