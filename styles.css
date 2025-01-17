@@ -580,3 +580,46 @@ h1 {
     width: 100%;
     margin: 5px 0;
 }
+
+/* Header buttons container */
+.header-buttons {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+/* Twinkl button styles */
+.twinkl-btn {
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #00BFA5;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.twinkl-btn:hover {
+    background-color: #00897B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Gemiini button styles */
+.gemiini-btn {
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #7E57C2;  /* Purple color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.gemiini-btn:hover {
+    background-color: #5E35B1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
