@@ -623,3 +623,98 @@ h1 {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+/* Timer button styles */
+.toggle-timer {
+    background-color: #FF9800;
+}
+
+.toggle-timer:hover {
+    background-color: #F57C00;
+}
+
+/* Timer page styles */
+.timer-page {
+    text-align: center;
+    padding: 50px;
+    background: linear-gradient(to bottom right, #F3E8FF, #FCE7F3);
+    border-radius: 20px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    margin: 20px;
+}
+
+.timer-page h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.timer-page input {
+    padding: 15px;
+    font-size: 24px;
+    width: 300px;
+    margin-bottom: 20px;
+    border: 2px solid #2196F3;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.timer-page input:focus {
+    outline: none;
+    border-color: #1976D2;
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.3);
+}
+
+.timer-display {
+    font-size: 120px;
+    font-weight: bold;
+    color: #333;
+    margin: 40px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    font-family: 'Arial', sans-serif;
+}
+
+.timer-page .nav-btn {
+    font-size: 20px;
+    padding: 15px 30px;
+    margin: 10px;
+    background-color: #4CAF50;
+    transition: all 0.3s ease;
+}
+
+.timer-page .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+#startTimerBtn {
+    background-color: #2196F3;
+}
+
+#startTimerBtn:hover {
+    background-color: #1976D2;
+}
+
+#backToMainBtn {
+    background-color: #FF5722;
+}
+
+#backToMainBtn:hover {
+    background-color: #E64A19;
+}
+
+/* Timer buttons container */
+.timer-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#resetTimerBtn {
+    background-color: #d9534f;
+}
+
+#resetTimerBtn:hover {
+    background-color: #c9302c;
+}

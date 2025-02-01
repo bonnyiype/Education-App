@@ -198,9 +198,85 @@ document.addEventListener('DOMContentLoaded', function() {
         return box;
     }
 
+    function updateSightWordsDisplay() {
+        numberGrid.innerHTML = '';
+        numberGrid.className = 'number-grid sight-words-mode';
+        
+        // Create score display
+        const scoreDisplay = document.createElement('div');
+        scoreDisplay.className = 'score-display';
+        scoreDisplay.innerHTML = `Score: ${score}/${total}`;
+        numberGrid.appendChild(scoreDisplay);
+        
+        // Create target word container
+        const targetContainer = document.createElement('div');
+        targetContainer.className = 'target-container';
+        
+        // Create target word box (displayed at the top)
+        const targetBox = document.createElement('div');
+        targetBox.className = 'number-box word-option target-word';
+        targetBox.textContent = targetWord;
+        targetContainer.appendChild(targetBox);
+        numberGrid.appendChild(targetContainer);
+        
+        // Speak the target word aloud (for "read" concept)
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(targetWord);
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+        }, 500);
+        
+        // Create options container
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'options-container';
+        
+        // Get two wrong words (different from target)
+        let wrongOptions = getRandomWords(targetWord, 2);
+        
+        // Randomly replace one wrong option with a blank card (shown as "___")
+        if (Math.random() < 0.5) {
+            const indexToReplace = Math.floor(Math.random() * wrongOptions.length);
+            wrongOptions[indexToReplace] = "";
+        }
+        
+        // Prepare all options: target word and the wrong options
+        const allOptions = [...wrongOptions, targetWord];
+        const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
+        
+        // Create each option box
+        shuffledOptions.forEach((word) => {
+            const box = document.createElement('div');
+            box.className = 'number-box word-option';
+            // Show a placeholder for blank cards
+            box.textContent = word === "" ? "___" : word;
+            box.setAttribute('data-word', word);
+            
+            box.addEventListener('click', function() {
+                handleWordClick(word);
+            });
+            
+            optionsContainer.appendChild(box);
+        });
+        
+        numberGrid.appendChild(optionsContainer);
+        
+        // Create feedback display if any feedback exists
+        if (feedback) {
+            const feedbackDisplay = document.createElement('div');
+            feedbackDisplay.className = `feedback-display ${isCorrect ? 'correct' : 'incorrect'}`;
+            feedbackDisplay.innerHTML = `
+                ${feedback}
+                ${celebration ? '<div class="celebration">✨ 🎈 ⭐️</div>' : ''}
+            `;
+            numberGrid.appendChild(feedbackDisplay);
+        }
+    }
+
     function handleWordClick(selectedWord) {
         total++;
         
+        // Get the clicked box (only if it is not the target word display)
         const clickedBox = document.querySelector(`.word-option[data-word="${selectedWord}"]:not(.target-word)`);
         if (clickedBox) {
             if (clickedBox.classList.contains('selected')) {
@@ -211,21 +287,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 allWordBoxes.forEach(box => box.classList.remove('selected'));
                 clickedBox.classList.add('selected');
                 
-                // Speak the selected word
-                const utterance = new SpeechSynthesisUtterance(selectedWord);
-                utterance.rate = 0.8; // Slightly slower
-                utterance.pitch = 1.2; // Slightly higher pitch
-                speechSynthesis.speak(utterance);
+                // Speak the selected word aloud (if it is not blank)
+                if (selectedWord !== "") {
+                    const utterance = new SpeechSynthesisUtterance(selectedWord);
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.2;
+                    speechSynthesis.speak(utterance);
+                }
             }
         }
         
+        // Check if the selected word is the target (blank cards will not match)
         if (selectedWord === targetWord) {
             score++;
             feedback = 'Wonderful! 🌟';
             isCorrect = true;
             celebration = true;
 
-            // Add matched class to both target and selected words
+            // Add matched styling to both target and selected boxes
             const targetWordBox = document.querySelector('.target-word');
             const selectedWordBox = document.querySelector(`.word-option[data-word="${selectedWord}"]:not(.target-word)`);
             
@@ -242,12 +321,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 1000);
             }
 
-            // Wait for animation to complete before showing next word
+            // After a delay, set a new target word and update the display
             setTimeout(() => {
                 targetWord = sightWords[Math.floor(Math.random() * sightWords.length)];
                 updateSightWordsDisplay();
                 
-                // Speak the new target word after a delay
+                // Speak the new target word aloud
                 setTimeout(() => {
                     const newWordUtterance = new SpeechSynthesisUtterance(targetWord);
                     newWordUtterance.rate = 0.8;
@@ -256,73 +335,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 }, 500);
             }, 2000);
         } else {
-            feedback = "Let's try again! 💪";
+            // If the selection is not correct (including a blank card), provide feedback
+            feedback = selectedWord === "" ? "That's a blank card. Try finding the matching word! 💪" : "Let's try again! 💪";
             isCorrect = false;
             celebration = false;
             updateSightWordsDisplay();
             
-            // Restore the selected state after redraw
+            // Reapply the selected state after redraw
             const newClickedBox = document.querySelector(`.word-option[data-word="${selectedWord}"]:not(.target-word)`);
             if (newClickedBox) {
                 newClickedBox.classList.add('selected');
             }
-        }
-    }
-
-    function updateSightWordsDisplay() {
-        numberGrid.innerHTML = '';
-        numberGrid.className = 'number-grid sight-words-mode';
-        
-        // Create score display
-        const scoreDisplay = document.createElement('div');
-        scoreDisplay.className = 'score-display';
-        scoreDisplay.innerHTML = `Score: ${score}/${total}`;
-        numberGrid.appendChild(scoreDisplay);
-        
-        // Create target word container
-        const targetContainer = document.createElement('div');
-        targetContainer.className = 'target-container';
-        
-        // Create target word box
-        const targetBox = document.createElement('div');
-        targetBox.className = 'number-box word-option target-word';
-        targetBox.textContent = targetWord;
-        targetContainer.appendChild(targetBox);
-        numberGrid.appendChild(targetContainer);
-        
-        // Create options container
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'options-container';
-        
-        // Create word options
-        const wrongOptions = getRandomWords(targetWord, 2);
-        const allOptions = [...wrongOptions, targetWord];
-        const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
-        
-        shuffledOptions.forEach((word) => {
-            const box = document.createElement('div');
-            box.className = 'number-box word-option';
-            box.textContent = word;
-            box.setAttribute('data-word', word);
-            
-            box.addEventListener('click', function() {
-                handleWordClick(word);
-            });
-            
-            optionsContainer.appendChild(box);
-        });
-        
-        numberGrid.appendChild(optionsContainer);
-        
-        // Create feedback display if there is feedback
-        if (feedback) {
-            const feedbackDisplay = document.createElement('div');
-            feedbackDisplay.className = `feedback-display ${isCorrect ? 'correct' : 'incorrect'}`;
-            feedbackDisplay.innerHTML = `
-                ${feedback}
-                ${celebration ? '<div class="celebration">✨ 🎈 ⭐️</div>' : ''}
-            `;
-            numberGrid.appendChild(feedbackDisplay);
         }
     }
 
@@ -564,4 +587,125 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the lowercase button as hidden
     toggleLowerCase.style.display = 'none';
+
+    // === TIMER FEATURE CODE ===
+    
+    // Get references to the timer elements
+    const timerBtn = document.getElementById('timerBtn');
+    const timerPage = document.getElementById('timerPage');
+    const timerInput = document.getElementById('timerInput');
+    const startTimerBtn = document.getElementById('startTimerBtn');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const resetTimerBtn = document.getElementById('resetTimerBtn');
+    const backToMainBtn = document.getElementById('backToMainBtn');
+    
+    // Also get references to existing main content elements
+    const header = document.querySelector('.header');
+    const navigation = document.querySelector('.navigation');
+    
+    // Global variable to hold the interval reference
+    let timerInterval = null;
+    
+    // Function to show the timer page and hide main content
+    function showTimerPage() {
+        header.style.display = 'none';
+        numberGrid.style.display = 'none';
+        navigation.style.display = 'none';
+        timerPage.style.display = 'block';
+        // Clear previous timer display/input
+        timerDisplay.textContent = '';
+        timerInput.value = '';
+        // If any timer is already running, clear it
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+    }
+    
+    // Function to return to main page and stop the timer if running
+    function showMainPage() {
+        timerPage.style.display = 'none';
+        header.style.display = '';
+        numberGrid.style.display = '';
+        navigation.style.display = 'flex';
+        // Clear timer if it is running
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        // Refresh the main page view
+        updatePage();
+    }
+    
+    // Attach event listener to Timer button in the dropdown menu
+    timerBtn.addEventListener('click', showTimerPage);
+    
+    // Back button returns to the main app view and stops any timer
+    backToMainBtn.addEventListener('click', showMainPage);
+    
+    // Start Timer button: after a short "Wait" message, count up from 1 to target
+    startTimerBtn.addEventListener('click', function() {
+        let target = parseInt(timerInput.value, 10);
+        if (isNaN(target) || target <= 0 || target > 10000) {
+            timerDisplay.textContent = "Please enter a valid number (1-10000)!";
+            return;
+        }
+        
+        // Clear any existing interval
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        
+        // Show a "Wait" message for 1 second before starting the count
+        timerDisplay.textContent = "Wait";
+        timerDisplay.style.color = '#333';
+        
+        setTimeout(() => {
+            let count = 1;
+            timerInterval = setInterval(() => {
+                if (count < target) {
+                    timerDisplay.textContent = count;
+                    timerDisplay.style.color = '#333';
+                    // Speak the current number aloud
+                    const utterance = new SpeechSynthesisUtterance(count.toString());
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.2;
+                    speechSynthesis.speak(utterance);
+                    count++;
+                } else if (count === target) {
+                    // For the final digit, display it in red
+                    timerDisplay.textContent = count;
+                    timerDisplay.style.color = '#f44336';
+                    const utterance = new SpeechSynthesisUtterance(count.toString());
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.2;
+                    speechSynthesis.speak(utterance);
+                    
+                    // After a short delay, speak "Time's up!"
+                    setTimeout(() => {
+                        const finishUtterance = new SpeechSynthesisUtterance("Time's up!");
+                        finishUtterance.rate = 0.8;
+                        finishUtterance.pitch = 1.2;
+                        speechSynthesis.speak(finishUtterance);
+                    }, 1000);
+                    
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }, 1000); // Update every second
+        }, 1000);
+    });
+    
+    // Reset Timer button: clear any running timer and reset display/input
+    resetTimerBtn.addEventListener('click', function() {
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+        timerDisplay.textContent = '';
+        timerDisplay.style.color = '#333';
+        timerInput.value = '';
+    });
 });
+
