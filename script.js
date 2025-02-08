@@ -707,5 +707,132 @@ document.addEventListener('DOMContentLoaded', function() {
         timerDisplay.style.color = '#333';
         timerInput.value = '';
     });
+
+    //////////////////////////////
+    // Fixed Sight Words Reading Mode Code
+    //////////////////////////////
+
+    let isFixedSightWordsMode = false;
+    const fixedSightWords = ["I", "Want", "Yes", "No", "Finish", "Wait"];
+    let fixedTargetWord = "";
+
+    const toggleFixedSightWordsBtn = document.getElementById('toggleFixedSightWords');
+    toggleFixedSightWordsBtn.addEventListener('click', () => {
+        isFixedSightWordsMode = !isFixedSightWordsMode;
+        // Turn off other modes when Fixed mode is activated
+        if (isFixedSightWordsMode) {
+            isSightWordsMode = false;
+            isEmotionsMode = false;
+            isColorMode = false;
+            toggleFixedSightWordsBtn.textContent = 'Back to Main Page';
+        } else {
+            toggleFixedSightWordsBtn.textContent = 'Fixed Sight Words';
+        }
+        currentPage = 1;
+        updatePage();
+    });
+
+    function updateFixedSightWordsDisplay() {
+        numberGrid.innerHTML = '';
+        numberGrid.className = 'number-grid fixed-sight-words-mode';
+        numberGrid.style.position = 'fixed';
+        numberGrid.style.top = '50%';
+        numberGrid.style.left = '50%';
+        numberGrid.style.transform = 'translate(-50%, -50%)';
+        
+        // Set fixed target word if not already set
+        if (!fixedTargetWord) {
+            fixedTargetWord = fixedSightWords[Math.floor(Math.random() * fixedSightWords.length)];
+        }
+        
+        // Speak the target word aloud after 500ms
+        setTimeout(() => {
+            const utterance = new SpeechSynthesisUtterance(fixedTargetWord);
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+        }, 500);
+        
+        // Prepare exactly 3 options: one is the target and two distractors from sightWords
+        let available = sightWords.filter(word => word !== fixedTargetWord);
+        let distractors = [];
+        while (distractors.length < 2 && available.length > 0) {
+            const randIndex = Math.floor(Math.random() * available.length);
+            const word = available.splice(randIndex, 1)[0];
+            distractors.push(word);
+        }
+        
+        let options = [...distractors, fixedTargetWord];
+        // Shuffle options
+        options = options.sort(() => Math.random() - 0.5);
+        
+        // With 50% chance, replace one non-target option with blank ("___")
+        if (Math.random() < 0.5) {
+            let nonTargetIndices = options.map((word, index) => word !== fixedTargetWord ? index : -1).filter(index => index !== -1);
+            if (nonTargetIndices.length > 0) {
+                const randomIndex = nonTargetIndices[Math.floor(Math.random() * nonTargetIndices.length)];
+                options[randomIndex] = "";
+            }
+        }
+        
+        // Create options container and add 3 cards
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'options-container';
+        options.forEach(word => {
+            const box = document.createElement('div');
+            box.className = 'number-box word-option';
+            box.textContent = word === "" ? "___" : word;
+            box.setAttribute('data-word', word);
+            box.addEventListener('click', function(event) {
+                handleFixedSightWordsClick(word, event.currentTarget);
+            });
+            optionsContainer.appendChild(box);
+        });
+        
+        numberGrid.appendChild(optionsContainer);
+    }
+
+    function handleFixedSightWordsClick(selectedWord, element) {
+        if (selectedWord === fixedTargetWord) {
+            // Highlight the card
+            element.classList.add('matched');
+            const utterance = new SpeechSynthesisUtterance("Correct!");
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+            setTimeout(() => {
+                fixedTargetWord = fixedSightWords[Math.floor(Math.random() * fixedSightWords.length)];
+                updateFixedSightWordsDisplay();
+            }, 2000);
+        } else {
+            const utterance = new SpeechSynthesisUtterance("Try again!");
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+            // Optionally, add incorrect highlight or feedback
+        }
+    }
+
+    // Modify updatePage() to include Fixed Sight Words Reading Mode
+    // Original updatePage() branches:
+    // ... other modes ...
+    // We'll add an else if branch for isFixedSightWordsMode below the isSightWordsMode branch.
+    const originalUpdatePage = updatePage;
+    updatePage = function() {
+        if (isFixedSightWordsMode) {
+            document.querySelector('.navigation').style.display = 'none';
+            updateFixedSightWordsDisplay();
+        } else {
+            // Clear inline centering styles for numberGrid if any
+            numberGrid.style.position = '';
+            numberGrid.style.top = '';
+            numberGrid.style.left = '';
+            numberGrid.style.transform = '';
+            // Call the original updatePage() for other modes
+            originalUpdatePage();
+        }
+    };
+
+    // Ensure updatePage() is called after all mode toggles as needed (existing code already does this).
 });
 
