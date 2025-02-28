@@ -813,15 +813,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Modify updatePage() to include Fixed Sight Words Reading Mode
-    // Original updatePage() branches:
-    // ... other modes ...
-    // We'll add an else if branch for isFixedSightWordsMode below the isSightWordsMode branch.
+    // Update the overridden updatePage function to include CVC Matching mode
     const originalUpdatePage = updatePage;
     updatePage = function() {
         if (isFixedSightWordsMode) {
+            // ... existing fixed sight words code ...
             document.querySelector('.navigation').style.display = 'none';
             updateFixedSightWordsDisplay();
+        } else if (isCVCMatchingMode) {
+            // CVC Matching mode
+            document.querySelector('.navigation').style.display = 'none';
+            updateCVCMatchingDisplay();
         } else {
             // Clear inline centering styles for numberGrid if any
             numberGrid.style.position = '';
@@ -833,6 +835,312 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    // Ensure updatePage() is called after all mode toggles as needed (existing code already does this).
+    //////////////////////////////
+    // CVC Matching Mode Code
+    //////////////////////////////
+    
+    let isCVCMatchingMode = false;
+    let selectedCVCCard = null;
+    let selectedCVCPicture = null;
+    let cvcScore = 0;
+    let cvcTotal = 0;
+    let cvcFeedback = '';
+    let cvcIsCorrect = null;
+    let cvcPairsMatched = 0;
+    
+    // Array of CVC words with 'a' as the vowel, along with image URLs
+    const cvcWordsA = [
+        {
+            word: "cat",
+            imageUrl: "https://cdn.pixabay.com/photo/2017/02/20/18/03/cat-2083492_640.jpg"
+        },
+        {
+            word: "bat",
+            imageUrl: "https://cdn.pixabay.com/photo/2017/10/29/18/00/animal-2901664_640.jpg"
+        },
+        {
+            word: "hat",
+            imageUrl: "https://cdn.pixabay.com/photo/2016/07/29/14/54/hat-1553113_640.jpg"
+        },
+        {
+            word: "map",
+            imageUrl: "https://cdn.pixabay.com/photo/2016/03/22/15/52/map-1273338_640.jpg"
+        },
+        {
+            word: "tap",
+            imageUrl: "https://cdn.pixabay.com/photo/2017/10/02/00/36/faucet-2808060_640.jpg"
+        },
+        {
+            word: "cap",
+            imageUrl: "https://cdn.pixabay.com/photo/2017/05/13/12/40/fashion-2309519_640.jpg"
+        }
+    ];
+    
+    // Store the currently displayed CVC cards and pictures
+    let currentCVCCards = [];
+    let currentCVCPictures = [];
+
+    const toggleCVCMatchingBtn = document.getElementById('toggleCVCMatching');
+    toggleCVCMatchingBtn.addEventListener('click', () => {
+        isCVCMatchingMode = !isCVCMatchingMode;
+        
+        // Turn off other modes when CVC mode is activated
+        if (isCVCMatchingMode) {
+            isFixedSightWordsMode = false;
+            isSightWordsMode = false;
+            isEmotionsMode = false;
+            isColorMode = false;
+            toggleCVCMatchingBtn.textContent = 'Back to Main Page';
+            // Reset CVC game state
+            cvcScore = 0;
+            cvcTotal = 0;
+            cvcPairsMatched = 0;
+            cvcFeedback = '';
+            cvcIsCorrect = null;
+            selectedCVCCard = null;
+            selectedCVCPicture = null;
+        } else {
+            toggleCVCMatchingBtn.textContent = 'CVC Matching';
+        }
+        
+        currentPage = 1;
+        updatePage();
+    });
+    
+    function updateCVCMatchingDisplay() {
+        // Clear and set class for number grid
+        numberGrid.innerHTML = '';
+        numberGrid.className = 'number-grid cvc-matching-mode';
+        
+        // Create container for all CVC content
+        const cvcContainer = document.createElement('div');
+        cvcContainer.className = 'cvc-container';
+        
+        // Add title and instructions
+        const titleElement = document.createElement('div');
+        titleElement.className = 'cvc-title';
+        titleElement.textContent = 'CVC Word and Picture Matching';
+        cvcContainer.appendChild(titleElement);
+        
+        // Add score display
+        const scoreElement = document.createElement('div');
+        scoreElement.className = 'cvc-score';
+        scoreElement.textContent = `Score: ${cvcScore}/${cvcTotal}`;
+        cvcContainer.appendChild(scoreElement);
+        
+        // Add instruction
+        const instructionElement = document.createElement('div');
+        instructionElement.className = 'cvc-instruction';
+        instructionElement.textContent = 'Match the CVC word with its picture';
+        cvcContainer.appendChild(instructionElement);
+        
+        // Create a grid for word cards
+        const wordGrid = document.createElement('div');
+        wordGrid.className = 'cvc-grid';
+        
+        // Select CVC words to display (3 pairs for now)
+        let cvcWordsToShow = [];
+        
+        // If all pairs have been matched, reset the game
+        if (cvcPairsMatched >= 3) {
+            cvcPairsMatched = 0;
+            cvcFeedback = 'Great job! Here are new words to match.';
+            cvcIsCorrect = true;
+        }
+        
+        // If we don't have current cards or all pairs matched, select new words
+        if (currentCVCCards.length === 0 || cvcPairsMatched >= 3) {
+            // Shuffle and pick 3 random CVC words
+            const shuffledWords = [...cvcWordsA].sort(() => Math.random() - 0.5);
+            cvcWordsToShow = shuffledWords.slice(0, 3);
+            
+            // Store the current selection
+            currentCVCCards = [...cvcWordsToShow];
+            currentCVCPictures = [...cvcWordsToShow];
+        } else {
+            // Use the currently displayed words
+            cvcWordsToShow = currentCVCCards;
+        }
+        
+        // Shuffle the word cards
+        const shuffledWordCards = [...cvcWordsToShow].sort(() => Math.random() - 0.5);
+        
+        // Create word cards
+        shuffledWordCards.forEach(wordObj => {
+            const card = document.createElement('div');
+            card.className = 'cvc-card';
+            card.textContent = wordObj.word;
+            card.setAttribute('data-word', wordObj.word);
+            
+            // If this word has been matched, mark it as matched
+            if (wordObj.matched) {
+                card.classList.add('matched');
+            } else {
+                // Add click handler only if not matched
+                card.addEventListener('click', function() {
+                    handleCVCCardClick(wordObj);
+                });
+            }
+            
+            wordGrid.appendChild(card);
+        });
+        
+        cvcContainer.appendChild(wordGrid);
+        
+        // Create a grid for picture cards
+        const pictureGrid = document.createElement('div');
+        pictureGrid.className = 'cvc-grid';
+        
+        // Shuffle the picture cards
+        const shuffledPictureCards = [...currentCVCPictures].sort(() => Math.random() - 0.5);
+        
+        // Create picture cards
+        shuffledPictureCards.forEach(pictureObj => {
+            const card = document.createElement('div');
+            card.className = 'cvc-picture';
+            card.setAttribute('data-word', pictureObj.word);
+            
+            const img = document.createElement('img');
+            img.src = pictureObj.imageUrl;
+            img.alt = pictureObj.word;
+            card.appendChild(img);
+            
+            // If this picture has been matched, mark it as matched
+            if (pictureObj.matched) {
+                card.classList.add('matched');
+            } else {
+                // Add click handler only if not matched
+                card.addEventListener('click', function() {
+                    handleCVCPictureClick(pictureObj);
+                });
+            }
+            
+            pictureGrid.appendChild(card);
+        });
+        
+        cvcContainer.appendChild(pictureGrid);
+        
+        // Add feedback if any
+        if (cvcFeedback) {
+            const feedbackElement = document.createElement('div');
+            feedbackElement.className = `cvc-feedback ${cvcIsCorrect ? 'correct' : 'incorrect'}`;
+            feedbackElement.textContent = cvcFeedback;
+            cvcContainer.appendChild(feedbackElement);
+        }
+        
+        numberGrid.appendChild(cvcContainer);
+    }
+    
+    function handleCVCCardClick(wordObj) {
+        // Get all cards and remove selected class
+        const allCards = document.querySelectorAll('.cvc-card');
+        allCards.forEach(card => {
+            if (!card.classList.contains('matched')) {
+                card.classList.remove('selected');
+            }
+        });
+        
+        // Add selected class to clicked card
+        const clickedCard = document.querySelector(`.cvc-card[data-word="${wordObj.word}"]`);
+        if (clickedCard && !clickedCard.classList.contains('matched')) {
+            clickedCard.classList.add('selected');
+            selectedCVCCard = wordObj;
+            
+            // Speak the word
+            const utterance = new SpeechSynthesisUtterance(wordObj.word);
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
+            speechSynthesis.speak(utterance);
+            
+            // Check for match if a picture is also selected
+            if (selectedCVCPicture) {
+                checkCVCMatch();
+            }
+        }
+    }
+    
+    function handleCVCPictureClick(pictureObj) {
+        // Get all pictures and remove selected class
+        const allPictures = document.querySelectorAll('.cvc-picture');
+        allPictures.forEach(picture => {
+            if (!picture.classList.contains('matched')) {
+                picture.classList.remove('selected');
+            }
+        });
+        
+        // Add selected class to clicked picture
+        const clickedPicture = document.querySelector(`.cvc-picture[data-word="${pictureObj.word}"]`);
+        if (clickedPicture && !clickedPicture.classList.contains('matched')) {
+            clickedPicture.classList.add('selected');
+            selectedCVCPicture = pictureObj;
+            
+            // Check for match if a card is also selected
+            if (selectedCVCCard) {
+                checkCVCMatch();
+            }
+        }
+    }
+    
+    function checkCVCMatch() {
+        cvcTotal++;
+        
+        if (selectedCVCCard.word === selectedCVCPicture.word) {
+            // It's a match!
+            cvcScore++;
+            cvcPairsMatched++;
+            cvcFeedback = 'Great match! 🌟';
+            cvcIsCorrect = true;
+            
+            // Mark both card and picture as matched
+            const matchedCard = document.querySelector(`.cvc-card[data-word="${selectedCVCCard.word}"]`);
+            const matchedPicture = document.querySelector(`.cvc-picture[data-word="${selectedCVCPicture.word}"]`);
+            
+            if (matchedCard && matchedPicture) {
+                matchedCard.classList.add('matched');
+                matchedPicture.classList.add('matched');
+                
+                // Mark them as matched in the arrays
+                currentCVCCards.forEach(card => {
+                    if (card.word === selectedCVCCard.word) {
+                        card.matched = true;
+                    }
+                });
+                
+                currentCVCPictures.forEach(picture => {
+                    if (picture.word === selectedCVCPicture.word) {
+                        picture.matched = true;
+                    }
+                });
+                
+                // Speak "Correct!"
+                setTimeout(() => {
+                    const utterance = new SpeechSynthesisUtterance("Correct!");
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1.2;
+                    speechSynthesis.speak(utterance);
+                }, 1000);
+            }
+            
+            // Check if all pairs are matched
+            if (cvcPairsMatched === 3) {
+                // Wait a moment before refreshing with new pairs
+                setTimeout(() => {
+                    updateCVCMatchingDisplay();
+                }, 3000);
+            } else {
+                // Just update the display to show the match
+                updateCVCMatchingDisplay();
+            }
+        } else {
+            // Not a match
+            cvcFeedback = 'Try again! 💪';
+            cvcIsCorrect = false;
+            updateCVCMatchingDisplay();
+        }
+        
+        // Reset selections
+        selectedCVCCard = null;
+        selectedCVCPicture = null;
+    }
 });
 
