@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleColorsBtn = document.getElementById('toggleColors');
     const toggleSightWordsBtn = document.getElementById('toggleSightWords');
     const toggleEmotionsBtn = document.getElementById('toggleEmotions');
-    const pageTitle = document.querySelector('h1');
+    const pageTitle = document.getElementById('pageTitle');
     const toggleShapesBtn = document.getElementById('toggleShapes');
     const toggleFixedSightWordsBtn = document.getElementById('toggleFixedSightWords');
     const toggleCVCMatchingBtn = document.getElementById('toggleCVCMatching');
