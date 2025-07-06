@@ -572,23 +572,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updatePage();
     });
 
-    // Add shapes toggle handler
     toggleShapesBtn.addEventListener('click', () => {
-        isShapesMode = !isShapesMode;
-        isEmotionsMode = false;
-        isColorMode = false;
-        isSightWordsMode = false;
-        isNumberMode = true;
-
-        toggleShapesBtn.textContent = isShapesMode ? 'Back to Main Page' : 'Switch to Shapes';
-        toggleBtn.style.display = isShapesMode ? 'none' : 'block';
-        toggleColorsBtn.style.display = isShapesMode ? 'none' : 'block';
-        toggleSightWordsBtn.style.display = isShapesMode ? 'none' : 'block';
-        toggleEmotionsBtn.style.display = isShapesMode ? 'none' : 'block';
-        pageTitle.textContent = isShapesMode ? 'Learn Shapes!' : 'Select a Number';
-
-        currentPage = 1;
-        updatePage();
+        window.location.href = 'shapes.html';
     });
 
     // Add BBC phonics button handler
